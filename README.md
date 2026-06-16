@@ -1,2 +1,2 @@
 # PFP-GIRNet
-model.py
+The code will be public soon.
