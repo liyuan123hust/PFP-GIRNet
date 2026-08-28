@@ -1,6 +1,16 @@
 # PFP-GIRNet
 
-PFP-GIRNet predicts vessel trajectories from two historical motion features: `dx` and `dy`. The raw `v_obs` positional-encoding channel at index 0 is excluded; model inputs use `v_obs[..., 1:3]` and `input_dim=2`.
+**PFP-GIRNet: Pseudo-future Perception-driven Gated Intention Residual Network for Multi-vessel Trajectory Prediction**
+
+PFP-GIRNet is a multi-vessel trajectory prediction framework designed to improve the modeling of vessel interactions and potential maneuvering intentions from historical AIS trajectories. The model uses two historical motion features, `dx` and `dy`, as input. The positional-encoding channel at index 0 of the raw `v_obs` tensor is excluded, and the model input is constructed using `v_obs[..., 1:3]` with `input_dim=2`.
+
+## Abstract
+
+Trajectory prediction is a critical technology for collision avoidance warning and traffic management in maritime intelligent transportation systems (MITS). However, existing spatiotemporal prediction models often provide limited explicit characterization of maneuvering cues embedded in historical observations. To address this issue, we propose a **Pseudo-future Perception-driven Gated Intention Residual Network (PFP-GIRNet)**.
+
+PFP-GIRNet consists of three main components. An **Adaptive Multi-Graph Convolution (AMG)** module models complex vessel interaction dependencies. A **Spatial-Spectral Feature Fusion (SSF)** module jointly captures interaction patterns and motion details through spatial attention and discrete wavelet transform. Furthermore, a **Gated Intention Fusion (GIF)** module generates a pseudo-future representation from historical features and adaptively integrates it with the historical motion representation to enhance nonlinear maneuver modeling.
+
+Experimental results demonstrate that PFP-GIRNet achieves superior trajectory prediction performance across different maritime scenarios and prediction horizons.
 
 ## Commands
 
