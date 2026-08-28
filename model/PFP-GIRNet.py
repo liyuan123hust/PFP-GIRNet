@@ -1,9 +1,3 @@
-"""
-VIG Model - Ship Trajectory Refiner with Dual-Domain Fusion and Intent Polarization
-===================================================================================
-A trajectory prediction model based on Spatial-Spectral Joint Feature Fusion and Entropy-Regularized Polarization.
-"""
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -242,13 +236,13 @@ class EntropyPolarizationGate(nn.Module):
         return H_final, z
 
 # =========================================================================
-# Dual-Domain VIG Architecture
+# Dual-domain architecture
 # =========================================================================
 class ShipTrajectoryRefiner(nn.Module):
     def __init__(
         self, 
         num_ships, 
-        input_dim=7, 
+        input_dim=2,
         d_model=64, 
         hist_len=30,
         pred_len=24,

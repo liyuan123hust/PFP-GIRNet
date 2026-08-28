@@ -1,25 +1,3 @@
-"""
-Script: bimamba_encoder.py
-
-Purpose:
-    Provide the VIG main model with a pure PyTorch bidirectional Mamba-like temporal encoder that can be trained locally on Windows without the mamba_ssm compiled extension.
-
-Workflow:
-    1. Receive historical temporal features with shape [B, T, C].
-    2. Process them independently through forward and reverse LocalMambaBlock instances.
-    3. Concatenate the bidirectional outputs, apply channel-attention recalibration, and project them back to the original channel dimension.
-
-Inputs:
-    - x: [B, T, C], where B is the batch size, T is the number of historical time steps, and C is the channel dimension.
-
-Outputs:
-    - output: [B, T, C], with the same shape as the input.
-
-Notes:
-    - This is a local PyTorch approximation of the Mamba/Selective SSM concept, not the official mamba_ssm implementation.
-    - mamba_fwd and mamba_rev are independent LocalMambaBlock instances and do not share parameters.
-"""
-
 from __future__ import annotations
 
 import torch
@@ -197,7 +175,7 @@ class BiMambaBlock(nn.Module):
 
 
 class BiMambaEncoder(nn.Module):
-    """A multi-layer VIG-BiMamba temporal encoder."""
+    """A multi-layer bidirectional Mamba temporal encoder."""
 
     def __init__(
         self,

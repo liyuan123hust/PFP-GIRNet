@@ -1,53 +1,28 @@
-# 🚢 PFP-GIRNet
+# PFP-GIRNet
 
-Official PyTorch implementation of **PFP-GIRNet** for multi-vessel trajectory prediction.
+PFP-GIRNet predicts vessel trajectories from two historical motion features: `dx` and `dy`. The raw `v_obs` positional-encoding channel at index 0 is excluded; model inputs use `v_obs[..., 1:3]` and `input_dim=2`.
 
-## 📁 Project Structure
-
-```text
-PFP-GIRNet/
-├── checkpoints/        # Pretrained model
-├── dataset/            # Test data and normalization parameters
-├── model/              # PFP-GIRNet model
-├── train_and_test/     # Testing script
-├── Environment.md      # Environment information
-└── command.md          # Running command
-```
-
-## ⚙️ Environment
-
-Main dependencies:
-
-- Python 3.12
-- PyTorch 2.5.1
-- CUDA 12.1
-- PyTorch Geometric 2.6.1
-- NumPy
-- SciPy
-- einops
-
-More details are provided in `Environment.md`.
-
-## ▶️ Test
-
-Run:
+## Commands
 
 ```bash
+python train_and_test/train.py
 python train_and_test/test.py
 ```
 
-The test script automatically loads:
+Training saves new two-feature checkpoints under `checkpoints/pfp_girnet_skagen_region/<obs_len>-<pred_len>/`. Test defaults to the matching `best_model.pth`.
 
-- `dataset/test.pkl`
-- `dataset/norm_params.pkl`
-- `checkpoints/vig_bimamba_skagen_region/30-24/best_model.pth`
+## Environment
 
-## 📌 Model
+The code was developed and tested with the following environment:
 
-The released checkpoint corresponds to the **30 → 24** trajectory prediction task.
-
-## 📄 Citation
-
-If this code is useful for your research, please consider citing our paper.
-
-Citation information will be updated after publication.
+- Python 3.12.9
+- PyTorch 2.5.1 + CUDA 12.1
+- torchvision 0.20.1
+- torchaudio 2.5.1
+- PyTorch Geometric 2.6.1
+- NumPy 2.4.6
+- SciPy 1.17.1
+- pandas 2.3.0
+- tqdm 4.66.1
+- NetworkX 3.6.1
+- einops 0.8.1

@@ -1,12 +1,3 @@
-"""
-PFP-GIRNet Testing Script
-=========================
-Evaluate PFP-GIRNet on the Oresund Region test set.
-
-Usage:
-    python train_and_test/test.py
-"""
-
 import argparse
 import importlib.util
 import os
@@ -27,20 +18,11 @@ sys.path.append(str(PROJECT_ROOT))
 
 MODEL_PATH = PROJECT_ROOT / "model" / "PFP-GIRNet.py"
 DATASET_DIR = PROJECT_ROOT / "dataset"
-REQUESTED_CHECKPOINT_PATH = (
-    PROJECT_ROOT
-    / "checkpoints"
-    / "vig_bimamba_skagen_region"
-    / "30-24"
-    / "best_model.pth"
-)
-PACKAGED_CHECKPOINT_PATH = (
-    PROJECT_ROOT
-    / "checkpoints"
-    / "vig_bimamba_skagen_region"
-    / "30-24"
-    / "best_model.pth"
-)
+CHECKPOINT_ROOT = PROJECT_ROOT / "checkpoints" / "pfp_girnet_skagen_region"
+
+
+def build_default_checkpoint_path(obs_len, pred_len):
+    return CHECKPOINT_ROOT / f"{obs_len}-{pred_len}" / "best_model.pth"
 
 
 def load_model_class():
@@ -252,10 +234,9 @@ def test(
                 "tcpa": batch["graphs"]["tcpa"].to(device),
             }
 
-            # The original input contains eight dimensions including positional encoding.
-            # PFP-GIRNet uses dimensions 1-7 as the seven model input features.
-            v_obs_7d = v_obs[..., 1:8]
-            obs_input = (v_obs_7d - mean) / std
+            # Use only the raw displacement features dx and dy (raw indices 1 and 2).
+            v_obs_2d = v_obs[..., 1:3]
+            obs_input = (v_obs_2d - mean[:2]) / std[:2]
 
             y_pred, _, _, _ = model(obs_input, graphs=graphs)
 
@@ -309,18 +290,11 @@ def test(
 # 4. Main
 # ===============================================================
 def resolve_checkpoint_path(checkpoint_path):
-    """Use the requested local checkpoint and fall back to the packaged copy."""
-    requested = Path(checkpoint_path)
-    if requested.is_file():
-        return requested
-    if PACKAGED_CHECKPOINT_PATH.is_file():
-        return PACKAGED_CHECKPOINT_PATH
-    raise FileNotFoundError(
-        "Checkpoint not found. Checked:\n"
-        f"  {requested}\n"
-        f"  {PACKAGED_CHECKPOINT_PATH}"
-    )
-
+    """Require a checkpoint trained from scratch with the two-feature model."""
+    checkpoint_path = Path(checkpoint_path)
+    if not checkpoint_path.is_file():
+        raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
+    return checkpoint_path
 
 def main(
     obs_len,
@@ -343,6 +317,7 @@ def main(
     if seed is not None:
         set_seed(seed)
 
+    checkpoint_path = checkpoint_path or build_default_checkpoint_path(obs_len, pred_len)
     checkpoint_path = resolve_checkpoint_path(checkpoint_path)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
@@ -379,7 +354,7 @@ def main(
 
     model = ShipTrajectoryRefiner(
         num_ships=20,
-        input_dim=7,
+        input_dim=2,
         d_model=d_model,
         hist_len=obs_len,
         pred_len=pred_len,
@@ -392,7 +367,7 @@ def main(
     ).to(device)
 
     print(f"Loading checkpoint: {checkpoint_path}")
-    state_dict = torch.load(checkpoint_path, map_location=device)
+    state_dict = torch.load(checkpoint_path, map_location=device, weights_only=True)
     model.load_state_dict(state_dict, strict=True)
 
     total_params = sum(p.numel() for p in model.parameters())
@@ -472,7 +447,7 @@ def main(
 def build_arg_parser():
     parser = argparse.ArgumentParser(description="Test PFP-GIRNet on the Oresund Region dataset.")
     parser.add_argument("--obs_len", type=int, default=30)
-    parser.add_argument("--pred_len", type=int, default=24)
+    parser.add_argument("--pred_len", type=int, default=12)
     parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--d_model", type=int, default=64)
     parser.add_argument("--num_layers", type=int, default=2)
@@ -492,8 +467,8 @@ def build_arg_parser():
     parser.add_argument(
         "--checkpoint_path",
         type=str,
-        default=str(REQUESTED_CHECKPOINT_PATH),
-        help="Path to best_model.pth. The packaged checkpoint is used as a fallback.",
+        default=None,
+        help="Override the default checkpoint for the selected obs_len and pred_len.",
     )
     parser.add_argument(
         "--result_dir",
