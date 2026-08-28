@@ -209,10 +209,7 @@ class IntentGenerator(nn.Module):
         return H_fut
 
 # =========================================================================
-# Entropy-Regularized Polarization Gate Fusion
-# =========================================================================
-# =========================================================================
-# Residual Polarization Gate Fusion (Updated to Section 4.4)
+# Residual Polarization Gate Fusion 
 # =========================================================================
 class EntropyPolarizationGate(nn.Module):
     def __init__(self, d_model):
@@ -248,8 +245,6 @@ class ShipTrajectoryRefiner(nn.Module):
         pred_len=24,
         num_layers=2,
         use_multi_graph=True,
-        ship_length=200.0,  
-        time_interval=5.0,
         spatial_dropout=0.0,
         fusion_dropout=0.0,
         intent_dropout=0.0,
@@ -265,13 +260,7 @@ class ShipTrajectoryRefiner(nn.Module):
         self.d_model = d_model
         self.hist_len = hist_len
         self.pred_len = pred_len
-        self.use_multi_graph = use_multi_graph
-        self.ship_length = ship_length
-        self.time_interval = time_interval
-        
-        self.min_turn_radius = 1.5 * ship_length  
-        self.max_turn_radius = 2.5 * ship_length  
-        
+        self.use_multi_graph = use_multi_graph        
         self.embedding = nn.Linear(input_dim, d_model)
         
         if use_multi_graph:
